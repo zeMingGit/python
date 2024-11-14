@@ -6,6 +6,7 @@ import time
 from webdriver_manager.chrome import ChromeDriverManager
 import html2text
 
+# 需要将html2text源码进行替换 https://github.com/Alir3z4/html2text/issues/386
 # 配置 Chrome 选项
 chrome_options = Options()
 chrome_options.add_argument('--headless')  # 无头模式

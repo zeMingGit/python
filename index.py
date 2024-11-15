@@ -41,6 +41,7 @@ try:
     print('页面加载完成！')
 
     # 提取文章内容
+    # By.TAG_NAME https://blog.csdn.net/xing7290/article/details/120904448
     content_element = safe_execute('提取文章内容', driver.find_element, By.CLASS_NAME, 'rich_media_content')
     content_html = content_element.get_attribute('outerHTML') if content_element else None
 

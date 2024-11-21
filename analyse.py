@@ -76,9 +76,11 @@ def semantic_analysis(text):
     keywords = jieba.analyse.extract_tags(text, topK=10, withWeight=True)
     # 情感分析
     sentiment = snownlp.SnowNLP(text).sentiments
+    s = snownlp.SnowNLP(text).summary(limit=4)
     return {
         "keywords": keywords,
-        "sentiment_score": sentiment
+        "sentiment_score": sentiment,
+        "snown_words": s,
     }
 
 
@@ -161,6 +163,7 @@ def main(file_path):
         print("结构统计:", structure)
         print("关键词:", semantic["keywords"])
         print("情感评分:", semantic["sentiment_score"])
+        print("概括总结文章:", semantic["snown_words"])
         print("词性分布:", pos_stats)
         print("主题:", topics)
 

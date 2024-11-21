@@ -34,7 +34,7 @@ def safe_execute(description, func, *args, **kwargs):
 
 try:
     # 加载页面
-    url = "https://mp.weixin.qq.com/s/QlCLrgHNRHE_IEG_Sew4RA"
+    url = "https://mp.weixin.qq.com/s/QA8eDqEPlV7TOV4G3CsNSg"
     safe_execute(f'开始获取地址: {url}', driver.get, url)
 
     # 等待页面加载完成

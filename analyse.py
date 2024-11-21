@@ -58,18 +58,25 @@ def summarize_analysis(analysis):
 
 
 # 主程序
-try:
-    # 加载 Markdown 文件
-    markdown_content = load_markdown_file("./output.md")
-    print("成功加载 Markdown 文件！")
+def main(file_path):
+    try:
+        # 加载 Markdown 文件
+        markdown_content = load_markdown_file(file_path)
+        print("成功加载 Markdown 文件！")
 
-    # 清洗和预处理文本
-    cleaned_text = preprocess_text(markdown_content)
-    print("文本清洗完成！")
+        # 清洗和预处理文本
+        cleaned_text = preprocess_text(markdown_content)
+        print("文本清洗完成！")
 
-    # 分析内容
-    analysis = analyze_content(cleaned_text)
-    summarize_analysis(analysis)
+        # 分析内容
+        analysis = analyze_content(cleaned_text)
+        summarize_analysis(analysis)
 
-except Exception as e:
-    print(f"发生错误：{e}")
+    except Exception as e:
+        print(f"发生错误：{e}")
+
+
+# 支持命令行运行
+if __name__ == "__main__":
+    # 可以替换为你需要的文件路径
+    main("./output.md")

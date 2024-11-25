@@ -14,7 +14,8 @@ console = Console()
 # 欢迎语句
 console.print("""
 [bold green]欢迎使用 zeMing 网页内容爬取工具！[/bold green]
-[cyan]您可以通过此工具爬取指定网页内容并保存为 Markdown 文件。[/cyan]
+[cyan]你可以通过此工具爬取指定网页内容并保存为 Markdown 文件。[/cyan]
+[cyan]承诺：本工具仅用于个人学习、研究使用。[/cyan]
 """)
 
 # 配置 Chrome 选项
@@ -46,22 +47,25 @@ def safe_execute(description, func, *args, **kwargs):
         console.log(f"[red]{description} 时发生错误: {e}")
         return None
 
-def display_menu(title, options, display_fn=lambda x: x):
+def display_menu_with_custom_input(title, options, display_fn=lambda x: x):
     """
-    显示数字菜单并返回用户选择的选项。
+    显示数字菜单并支持用户自定义输入。
     :param title: 菜单标题
     :param options: 菜单选项列表
     :param display_fn: 自定义选项显示内容的函数
-    :return: 用户选择的选项
+    :return: 用户选择的选项或自定义输入
     """
     console.print(f"\n[bold cyan]{title}[/bold cyan]")
     for idx, option in enumerate(options, start=1):
         console.print(f"{idx}. {display_fn(option)}")
+    console.print(f"{len(options) + 1}. [yellow]自定义输入[/yellow]")
     while True:
         try:
             choice = int(input("请输入选项编号: "))
             if 1 <= choice <= len(options):
-                return options[choice - 1]
+                return options[choice - 1]["class_name"]
+            elif choice == len(options) + 1:
+                return input("请输入自定义的 class 名称: ")
             else:
                 console.print("[bold red]无效输入，请输入有效的选项编号！[/bold red]")
         except ValueError:
@@ -69,7 +73,7 @@ def display_menu(title, options, display_fn=lambda x: x):
 
 def main_menu():
     """主菜单"""
-    return display_menu("主菜单", ["爬取网页内容", "退出工具"])
+    return display_menu_with_custom_input("主菜单", [{"class_name": "爬取网页内容"}, {"class_name": "退出工具"}], lambda x: x["class_name"])
 
 try:
     while True:
@@ -80,13 +84,12 @@ try:
             # 获取目标 URL
             url = input("请输入目标网页的 URL: ")
 
-            # 选择 class 名称
-            class_option = display_menu(
+            # 选择 class 名称或自定义输入
+            class_name = display_menu_with_custom_input(
                 "选择内容 class 名称",
                 class_options,
                 lambda opt: f"{opt['description']} ({opt['class_name']})"
             )
-            class_name = class_option["class_name"]
 
             # 设置输出文件名
             output_file = input("请输入输出文件路径 (默认 output.md): ") or "output.md"

@@ -7,8 +7,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 import html2text
 from rich.console import Console
 from rich.progress import Progress
-from prompt_toolkit import prompt
-from prompt_toolkit.completion import WordCompleter
 
 # 初始化 Rich Console
 console = Console()
@@ -33,7 +31,6 @@ driver = webdriver.Chrome(service=service, options=chrome_options)
 
 # 提供 class 选项
 class_options = ["rich_media_content", "article-content", "main-content"]
-class_completer = WordCompleter(class_options, ignore_case=True)
 
 # 定义一个辅助函数，用于执行并处理异常
 def safe_execute(description, func, *args, **kwargs):
@@ -45,56 +42,81 @@ def safe_execute(description, func, *args, **kwargs):
         console.log(f"[red]{description} 时发生错误: {e}")
         return None
 
+def display_menu(title, options):
+    """
+    显示数字菜单并返回用户选择的选项。
+    :param title: 菜单标题
+    :param options: 菜单选项列表
+    :return: 用户选择的选项
+    """
+    console.print(f"\n[bold cyan]{title}[/bold cyan]")
+    for idx, option in enumerate(options, start=1):
+        console.print(f"{idx}. {option}")
+    while True:
+        try:
+            choice = int(input("请输入选项编号: "))
+            if 1 <= choice <= len(options):
+                return options[choice - 1]
+            else:
+                console.print("[bold red]无效输入，请输入有效的选项编号！[/bold red]")
+        except ValueError:
+            console.print("[bold red]无效输入，请输入数字！[/bold red]")
+
+def main_menu():
+    """主菜单"""
+    return display_menu("主菜单", ["爬取网页内容", "退出工具"])
+
 try:
     while True:
-        # 获取目标 URL
-        url = prompt("请输入目标网页的 URL: ")
+        # 显示主菜单
+        menu_choice = main_menu()
 
-        # 获取 class 名称
-        console.print("\n[bold cyan]请选择要提取的内容的 class 名称:[/bold cyan]")
-        class_name = prompt("输入或选择 class 名称: ", completer=class_completer)
+        if menu_choice == "爬取网页内容":
+            # 获取目标 URL
+            url = input("请输入目标网页的 URL: ")
 
-        # 设置输出文件名
-        output_file = prompt("请输入输出文件路径 (默认 output.md): ", default="output.md")
+            # 选择 class 名称
+            class_name = display_menu("选择内容 class 名称", class_options)
 
-        # 开始访问 URL
-        console.log(f"[bold green]开始访问 URL: [blue]{url}")
-        safe_execute(f'访问 {url}', driver.get, url)
+            # 设置输出文件名
+            output_file = input("请输入输出文件路径 (默认 output.md): ") or "output.md"
 
-        # 等待页面加载完成
-        with Progress() as progress:
-            task = progress.add_task("[cyan]等待页面加载...", total=2)
-            for _ in range(2):
-                time.sleep(1)
-                progress.update(task, advance=1)
-        console.log("[bold green]页面加载完成！")
+            # 开始访问 URL
+            console.log(f"[bold green]开始访问 URL: [blue]{url}")
+            safe_execute(f'访问 {url}', driver.get, url)
 
-        # 提取文章内容
-        content_element = safe_execute('提取文章内容', driver.find_element, By.CLASS_NAME, class_name)
-        content_html = content_element.get_attribute('outerHTML') if content_element else None
+            # 等待页面加载完成
+            with Progress() as progress:
+                task = progress.add_task("[cyan]等待页面加载...", total=2)
+                for _ in range(2):
+                    time.sleep(1)
+                    progress.update(task, advance=1)
+            console.log("[bold green]页面加载完成！")
 
-        # 转换为 Markdown
-        if content_html:
-            markdown_converter = html2text.HTML2Text()
-            markdown_converter.mark_code = True
-            markdown_converter.ignore_links = False  # 保留链接
-            markdown_converter.backquote_code_style = True  # 转换 code 代码
-            markdown_content = safe_execute('转换为 Markdown', markdown_converter.handle, content_html)
-        else:
-            markdown_content = None
+            # 提取文章内容
+            content_element = safe_execute('提取文章内容', driver.find_element, By.CLASS_NAME, class_name)
+            content_html = content_element.get_attribute('outerHTML') if content_element else None
 
-        # 写入文件
-        if markdown_content:
-            with open(output_file, "w", encoding="utf-8") as f:
-                f.write(markdown_content)
-            console.log(f"[bold green]Markdown 内容已保存到文件: [blue]{output_file}")
-        else:
-            console.log("[bold red]由于转换内容失败，跳过写入文件。")
+            # 转换为 Markdown
+            if content_html:
+                markdown_converter = html2text.HTML2Text()
+                markdown_converter.mark_code = True
+                markdown_converter.ignore_links = False  # 保留链接
+                markdown_converter.backquote_code_style = True  # 转换 code 代码
+                markdown_content = safe_execute('转换为 Markdown', markdown_converter.handle, content_html)
+            else:
+                markdown_content = None
 
-        # 询问是否继续
-        continue_choice = prompt("\n[bold yellow]是否继续爬取其他网页内容？(y/n): [/bold yellow]", default="y").lower()
-        if continue_choice != 'y':
-            console.log("[bold green]感谢使用 zeMing 工具！再见！")
+            # 写入文件
+            if markdown_content:
+                with open(output_file, "w", encoding="utf-8") as f:
+                    f.write(markdown_content)
+                console.log(f"[bold green]Markdown 内容已保存到文件: [blue]{output_file}")
+            else:
+                console.log("[bold red]由于转换内容失败，跳过写入文件。")
+
+        elif menu_choice == "退出工具":
+            console.print("[bold green]感谢使用 zeMing 工具！再见！[/bold green]")
             break
 
 finally:

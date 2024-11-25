@@ -29,8 +29,12 @@ console.log("[bold green]正在初始化 ChromeDriver...")
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=chrome_options)
 
-# 提供 class 选项
-class_options = ["rich_media_content", "article-content", "main-content"]
+# 提供 class 选项和描述信息
+class_options = [
+    {"class_name": "rich_media_content", "description": "微信公众号内容"},
+    {"class_name": "article-content", "description": "文章主体内容"},
+    {"class_name": "main-content", "description": "主要内容区域"}
+]
 
 # 定义一个辅助函数，用于执行并处理异常
 def safe_execute(description, func, *args, **kwargs):
@@ -42,16 +46,17 @@ def safe_execute(description, func, *args, **kwargs):
         console.log(f"[red]{description} 时发生错误: {e}")
         return None
 
-def display_menu(title, options):
+def display_menu(title, options, display_fn=lambda x: x):
     """
     显示数字菜单并返回用户选择的选项。
     :param title: 菜单标题
     :param options: 菜单选项列表
+    :param display_fn: 自定义选项显示内容的函数
     :return: 用户选择的选项
     """
     console.print(f"\n[bold cyan]{title}[/bold cyan]")
     for idx, option in enumerate(options, start=1):
-        console.print(f"{idx}. {option}")
+        console.print(f"{idx}. {display_fn(option)}")
     while True:
         try:
             choice = int(input("请输入选项编号: "))
@@ -76,7 +81,12 @@ try:
             url = input("请输入目标网页的 URL: ")
 
             # 选择 class 名称
-            class_name = display_menu("选择内容 class 名称", class_options)
+            class_option = display_menu(
+                "选择内容 class 名称",
+                class_options,
+                lambda opt: f"{opt['description']} ({opt['class_name']})"
+            )
+            class_name = class_option["class_name"]
 
             # 设置输出文件名
             output_file = input("请输入输出文件路径 (默认 output.md): ") or "output.md"
